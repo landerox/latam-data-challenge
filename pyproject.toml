@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "latam-data-challenge"
+version = "0.0.1"
+description = "Data engineering challenge using Python & Google Cloud Platform (GCP). Includes infrastructure as code (Terraform), CI/CD, and optimized data processing for Latam region."
+authors = ["Fernando Landero <landerox@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.12"
+google-cloud-bigquery = "^3.34.0"
+google-cloud-storage = "^3.1.0"
+memory-profiler = "^0.61.0"
+pandas = "^2.3.0"
+pydantic = "^2.11.5"
+python-dotenv = "^1.1.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.0"
+pre-commit = "^4.2.0"
+ruff = "^0.11.13"
+bandit = "^1.8.3"
+pyright = "^1.1.401"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
