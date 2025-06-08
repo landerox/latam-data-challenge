@@ -1,0 +1,57 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+    env:
+      GOOGLE_CREDENTIALS: ${{ secrets.SA_TERRAFORM_KEY }}
+      PROJECT_ID: ${{ vars.PROJECT_ID }}
+      REGION: ${{ vars.REGION }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - name: Create credentials file
+        run: echo "${{ secrets.SA_TERRAFORM_KEY }}" > ${{ github.workspace }}/sa-terraform.json
+      - name: Terraform Init
+        run: terraform -chdir=terraform init
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform -chdir=terraform plan \
+            -out=tfplan.txt \
+            -var="credentials_file=${{ github.workspace }}/sa-terraform.json" \
+            -var="project_id=$PROJECT_ID" \
+            -var="region=$REGION"
+      - name: Show Terraform Plan
+        run: terraform -chdir=terraform show tfplan.txt
+
+  terraform-apply:
+    if: github.ref == 'refs/heads/main'
+    needs: terraform-plan
+    runs-on: ubuntu-latest
+    environment:
+      name: cloud
+    env:
+      GOOGLE_CREDENTIALS: ${{ secrets.SA_TERRAFORM_KEY }}
+      PROJECT_ID: ${{ vars.PROJECT_ID }}
+      REGION: ${{ vars.REGION }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - name: Create credentials file
+        run: echo "${{ secrets.SA_TERRAFORM_KEY }}" > ${{ github.workspace }}/sa-terraform.json
+      - name: Terraform Init
+        run: terraform -chdir=terraform init
+      - name: Terraform Apply
+        run: |
+          terraform -chdir=terraform apply -auto-approve \
+            -var="credentials_file=${{ github.workspace }}/sa-terraform.json" \
+            -var="project_id=$PROJECT_ID" \
+            -var="region=$REGION"
