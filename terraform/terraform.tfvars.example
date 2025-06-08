@@ -1,0 +1,7 @@
+# === Project Information ===
+project_id        = "<YOUR_PROJECT_ID>"
+repository_id     = "<YOUR_REPOSITORY_ID>"
+environment       = "<dev|staging|prod>"
+region            = "<GCP_REGION>"
+zone              = "<GCP_ZONE>"
+credentials_file  = "sa/sa-terraform.json"
