@@ -103,6 +103,13 @@ jobs:
             --command="python" \
             --args="src/main.py,--question,all,--method,time,--top_n,10,--save_bq" \
             --set-env-vars="PYTHONPATH=/app" \
+            --cpu=2 \
+            --memory=4Gi \
+            --max-retries=1 \
+            --timeout=3600s \
+            --labels="environment=${{ vars.ENVIRONMENT }},repository_id=${{ vars.REPOSITORY_ID }}" \
+            --platform=managed \
+            --execution-environment=gen2 \
             --no-async
 
       # (Opcional) Run the Job after deployment
