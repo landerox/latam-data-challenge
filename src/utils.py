@@ -96,6 +96,7 @@ def save_results_to_bq(
     delete_query = f"""
     DELETE FROM `{table_id}`
     WHERE DATE(ingested_at) = "{partition_filter}"
+        AND method = "{method}"
     """  # nosec B608
 
     try:
