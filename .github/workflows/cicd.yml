@@ -1,0 +1,55 @@
+name: 'CI/CD'
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  terraform:
+    name: Terraform Workflow
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECT_ID: ${{ vars.PROJECT_ID }}
+      REPOSITORY_ID: ${{ vars.REPOSITORY_ID }}
+      REGION: ${{ vars.REGION }}
+      ZONE: ${{ vars.ZONE }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.SA_DEPLOYMENT_KEY }}'
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Terraform Init
+        run: terraform -chdir=terraform init
+
+      - name: Terraform Validate
+        run: terraform -chdir=terraform validate
+
+      - name: Terraform Plan
+        run: |
+          terraform -chdir=terraform plan \
+            -var="project_id=$PROJECT_ID" \
+            -var="repository_id=$REPOSITORY_ID" \
+            -var="region=$REGION" \
+            -var="zone=$ZONE"
+
+      - name: Terraform Apply (only on main)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          terraform -chdir=terraform apply -auto-approve \
+            -var="project_id=$PROJECT_ID" \
+            -var="repository_id=$REPOSITORY_ID" \
+            -var="region=$REGION" \
+            -var="zone=$ZONE"

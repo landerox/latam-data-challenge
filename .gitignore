@@ -203,5 +203,5 @@ terraform/sa/
 *.tfstate.*
 terraform.tfvars
 tfplan
-terraform/.terraform/
+terraform/.terraform/*
 .terraform/
