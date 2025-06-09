@@ -193,7 +193,7 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
-# history
+# History files
 .history
 
 # Terraform sensitive & state files
@@ -205,3 +205,6 @@ terraform.tfvars
 tfplan
 terraform/.terraform/*
 .terraform/
+
+# Local configuration files
+data
