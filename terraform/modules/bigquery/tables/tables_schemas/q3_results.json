@@ -1,0 +1,26 @@
+[
+  {
+    "description": "Date of tweet activity",
+    "mode": "NULLABLE",
+    "name": "tweet_date",
+    "type": "DATE"
+  },
+  {
+    "description": "Username with the most tweets on that date",
+    "mode": "NULLABLE",
+    "name": "top_user",
+    "type": "STRING"
+  },
+  {
+    "description": "Method used: 'time' or 'memory'",
+    "mode": "NULLABLE",
+    "name": "method",
+    "type": "STRING"
+  },
+  {
+    "description": "Timestamp when data was ingested",
+    "mode": "NULLABLE",
+    "name": "ingested_at",
+    "type": "TIMESTAMP"
+  }
+]

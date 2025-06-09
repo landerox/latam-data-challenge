@@ -1,47 +1,48 @@
 # syntax=docker/dockerfile:1
 
-# Use Python 3.12 slim base image
+# Set Python version as build argument
 ARG PYTHON_VER=3.12
+
+# Use slim Python base image
 FROM python:${PYTHON_VER}-slim-bullseye
 
-# Set environment variables
+# Set environment variables for Python and application path
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app
+    PYTHONPATH=/app \
+    PIP_NO_CACHE_DIR=1
 
-# Create a non-root user for security
+# Create a non-root user and group for the application
 RUN groupadd -r appuser && useradd --no-log-init -r -g appuser appuser
 
+# Set the working directory
 WORKDIR /app
 
-# Install required system packages with minimal footprint
+# Install required system libraries for Python packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    curl \
     gcc \
     git \
     libffi-dev \
-    libpq-dev \
     libssl-dev \
     python3-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# (If you use Poetry, copy pyproject.toml and poetry.lock first)
+# Copy dependency files to the image
 COPY pyproject.toml poetry.lock* requirements.txt* ./
 
-# Install dependencies (choose one: poetry or pip)
-# If you use Poetry (recommended for modern projects):
+# Install Python dependencies with Poetry
 RUN pip install --no-cache-dir --upgrade pip poetry \
     && poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
 
-# Copy the rest of the project files (including src/)
+# Copy the application source code
 COPY . .
 
-# Set permissions
+# Set permissions for the application directory
 RUN chown -R appuser:appuser /app && chmod -R 755 /app
 
+# Switch to the non-root user
 USER appuser
 
-# Default command: run the main script from src/
+# Set the default command to run the entrypoint script
 CMD ["python", "src/main.py"]
