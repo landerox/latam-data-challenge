@@ -24,6 +24,7 @@ variable "zone" {
 }
 
 variable "credentials_file" {
-  description = "Path to the GCP service account credentials JSON"
+  description = "Path to the credentials file"
   type        = string
+  default     = ""
 }
