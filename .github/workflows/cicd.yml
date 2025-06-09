@@ -12,12 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PROJECT_ID: ${{ vars.PROJECT_ID }}
-      REPOSITORY_ID: ${{ vars.REPOSITORY_ID }}
       REGION: ${{ vars.REGION }}
-      ZONE: ${{ vars.ZONE }}
-      ENVIRONMENT: ${{ vars.ENVIRONMENT }}
       ARTIFACT_REPO: ${{ vars.ARTIFACT_REPO }}
       IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+      CLOUD_RUN_JOB_NAME: ${{ vars.CLOUD_RUN_JOB_NAME }}
+      ENVIRONMENT: ${{ vars.ENVIRONMENT }}
+      REPOSITORY_ID: ${{ vars.REPOSITORY_ID }}
+      ZONE: ${{ vars.ZONE }}
 
     steps:
       - name: Checkout source code
@@ -68,6 +69,12 @@ jobs:
     env:
       PROJECT_ID: ${{ vars.PROJECT_ID }}
       REGION: ${{ vars.REGION }}
+      ARTIFACT_REPO: ${{ vars.ARTIFACT_REPO }}
+      IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+      CLOUD_RUN_JOB_NAME: ${{ vars.CLOUD_RUN_JOB_NAME }}
+      ENVIRONMENT: ${{ vars.ENVIRONMENT }}
+      REPOSITORY_ID: ${{ vars.REPOSITORY_ID }}
+      ZONE: ${{ vars.ZONE }}
 
     steps:
       - name: Checkout source code
@@ -101,12 +108,14 @@ jobs:
           docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/${IMAGE_NAME}:latest .
 
       - name: Push image to Artifact Registry
+        if: github.ref == 'refs/heads/main'
         run: |
           docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/${IMAGE_NAME}:latest
 
       - name: Deploy to Cloud Run Job
+        if: github.ref == 'refs/heads/main'
         run: |
-          gcloud run jobs deploy latam-data-challenge-job \
+          gcloud run jobs deploy $CLOUD_RUN_JOB_NAME \
             --image=${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/${IMAGE_NAME}:latest \
             --project=${PROJECT_ID} \
             --region=${REGION} \
@@ -118,15 +127,15 @@ jobs:
             --memory=4Gi \
             --max-retries=1 \
             --timeout=3600s \
-            --labels="environment=${{ vars.ENVIRONMENT }},repository_id=${{ vars.REPOSITORY_ID }}" \
+            --labels="environment=${ENVIRONMENT},repository_id=${REPOSITORY_ID}" \
             --platform=managed \
             --execution-environment=gen2 \
             --no-async
 
-      # (Opcional) Run the Job after deployment
       - name: Run Cloud Run Job
+        if: github.ref == 'refs/heads/main'
         run: |
-          gcloud run jobs execute latam-data-challenge-job \
+          gcloud run jobs execute $CLOUD_RUN_JOB_NAME \
             --project=${PROJECT_ID} \
             --region=${REGION} \
             --wait
