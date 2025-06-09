@@ -10,7 +10,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 from zoneinfo import ZoneInfo
 
-from google.cloud import bigquery
+from google.cloud import bigquery, storage
+import tempfile
 
 
 def get_config_value(key: str) -> str:
@@ -97,3 +98,29 @@ def save_results_to_bq(
         logging.error("Failed to insert into BigQuery: %s", errors)
     else:
         logging.info("Results saved to BigQuery table: %s", table_id)
+
+
+def get_local_file_path(file_path: str) -> str:
+    """
+    Downloads a file from GCS if `file_path` starts with 'gs://',
+    saves it to a temporary location using pathlib, and returns the local path.
+
+    Args:
+        file_path: Path to the file (GCS URI or local path).
+
+    Returns:
+        Path to a local file as string.
+    """
+    if file_path.startswith("gs://"):
+        bucket_name, blob_path = file_path[5:].split("/", 1)
+        client = storage.Client()
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(blob_path)
+
+        temp_dir = Path(tempfile.gettempdir())
+        local_path = temp_dir / Path(blob_path).name
+        blob.download_to_filename(str(local_path))
+
+        return str(local_path)
+
+    return str(Path(file_path).resolve())

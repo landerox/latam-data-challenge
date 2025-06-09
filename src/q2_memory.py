@@ -9,6 +9,8 @@ import json
 import re
 from collections import Counter
 
+from utils import get_local_file_path
+
 
 def q2_memory(file_path: str, top_n: int = 10) -> List[Tuple[str, int]]:
     """
@@ -21,15 +23,16 @@ def q2_memory(file_path: str, top_n: int = 10) -> List[Tuple[str, int]]:
     Returns:
         List of tuples: (emoji, count).
     """
+    file_path = get_local_file_path(file_path)
     emoji_counter = Counter()
-    # Emoji pattern (wide unicode support)
+
     emoji_pattern = re.compile(
         "["
-        "\U0001f600-\U0001f64f"  # emoticons
-        "\U0001f300-\U0001f5ff"  # symbols & pictographs
-        "\U0001f680-\U0001f6ff"  # transport & map
-        "\U0001f1e0-\U0001f1ff"  # flags
-        "\U00002700-\U000027bf"  # dingbats
+        "\U0001f600-\U0001f64f"
+        "\U0001f300-\U0001f5ff"
+        "\U0001f680-\U0001f6ff"
+        "\U0001f1e0-\U0001f1ff"
+        "\U00002700-\U000027bf"
         "\U000024c2-\U0001f251"
         "]+",
         flags=re.UNICODE,
@@ -45,6 +48,6 @@ def q2_memory(file_path: str, top_n: int = 10) -> List[Tuple[str, int]]:
                 emojis_found = emoji_pattern.findall(content)
                 emoji_counter.update(emojis_found)
             except json.JSONDecodeError:
-                continue  # Skip malformed JSON lines
+                continue
 
     return emoji_counter.most_common(top_n)
