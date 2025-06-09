@@ -10,7 +10,6 @@ jobs:
   terraform:
     name: Terraform Workflow
     runs-on: ubuntu-latest
-
     env:
       PROJECT_ID: ${{ vars.PROJECT_ID }}
       REPOSITORY_ID: ${{ vars.REPOSITORY_ID }}
@@ -22,7 +21,7 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud (Terraform)
         uses: google-github-actions/auth@v2
         with:
           credentials_json: '${{ secrets.SA_TERRAFORM_KEY }}'
@@ -59,3 +58,57 @@ jobs:
             -var="region=$REGION" \
             -var="zone=$ZONE" \
             -var="environment=$ENVIRONMENT"
+
+  build_and_deploy:
+    name: Build, Publish & Deploy
+    needs: terraform
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_ID: ${{ vars.PROJECT_ID }}
+      REGION: ${{ vars.REGION }}
+      IMAGE_NAME: "latam-data-challenge"
+      ARTIFACT_REPO: "latam-data-challenge-repo"
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (Build/Deploy)
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.SA_DEPLOYMENT_KEY }}'
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${REGION}-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/${IMAGE_NAME}:latest .
+
+      - name: Push image to Artifact Registry
+        run: |
+          docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/${IMAGE_NAME}:latest
+
+      - name: Deploy to Cloud Run Job
+        run: |
+          gcloud run jobs deploy latam-data-challenge-job \
+            --image=${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/${IMAGE_NAME}:latest \
+            --project=${PROJECT_ID} \
+            --region=${REGION} \
+            --service-account=sa-deployment@${PROJECT_ID}.iam.gserviceaccount.com \
+            --command="python" \
+            --args="src/main.py,--question,all,--method,time,--top_n,10,--save_bq" \
+            --set-env-vars="PYTHONPATH=/app" \
+            --no-async
+
+      # (Opcional) Run the Job after deployment
+      - name: Run Cloud Run Job
+        run: |
+          gcloud run jobs execute latam-data-challenge-job \
+            --project=${PROJECT_ID} \
+            --region=${REGION} \
+            --wait
