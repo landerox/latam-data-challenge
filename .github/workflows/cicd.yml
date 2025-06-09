@@ -127,9 +127,8 @@ jobs:
             --cpu=2 \
             --memory=4Gi \
             --max-retries=1 \
-            --timeout=3600s \
+            --task-timeout=3600s \
             --labels="environment=${ENVIRONMENT},repository_id=${REPOSITORY_ID}" \
-            --platform=managed \
             --execution-environment=gen2 \
             --no-async
 
