@@ -16,6 +16,7 @@ jobs:
       REPOSITORY_ID: ${{ vars.REPOSITORY_ID }}
       REGION: ${{ vars.REGION }}
       ZONE: ${{ vars.ZONE }}
+      ENVIRONMENT: ${{ vars.ENVIRONMENT }}
 
     steps:
       - name: Checkout source code
@@ -46,7 +47,8 @@ jobs:
             -var="project_id=$PROJECT_ID" \
             -var="repository_id=$REPOSITORY_ID" \
             -var="region=$REGION" \
-            -var="zone=$ZONE"
+            -var="zone=$ZONE" \
+            -var="environment=$ENVIRONMENT"
 
       - name: Terraform Apply (only on main)
         if: github.ref == 'refs/heads/main'
@@ -55,4 +57,5 @@ jobs:
             -var="project_id=$PROJECT_ID" \
             -var="repository_id=$REPOSITORY_ID" \
             -var="region=$REGION" \
-            -var="zone=$ZONE"
+            -var="zone=$ZONE" \
+            -var="environment=$ENVIRONMENT"
