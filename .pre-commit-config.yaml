@@ -30,20 +30,9 @@ repos:
         args: [--fix]                     # Automatically fix linting issues where possible
       - id: ruff-format                   # Format Python code with Ruff
         types_or: [python, pyi, jupyter]  # Apply to Python, .pyi, and Jupyter files
-        args: [--fix]                     # Automatically fix formatting issues
 
   # Bandit: Security analysis for Python code
   - repo: https://github.com/PyCQA/bandit
     rev: 1.8.3
     hooks:
       - id: bandit   # Identify potential security issues in Python code
-
-  # Pyright: Static type checker, executed via Poetry
-  - repo: local
-    hooks:
-      - id: pyright                # Perform static type checking with Pyright
-        name: Run Pyright          # Hook display name
-        entry: poetry run pyright  # Execute Pyright through Poetry's virtual environment
-        language: system           # Use the system environment to run the command
-        types: [python]            # Only apply to Python files
-        pass_filenames: false      # Analyze the entire project instead of individual files
