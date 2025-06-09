@@ -16,6 +16,8 @@ jobs:
       REGION: ${{ vars.REGION }}
       ZONE: ${{ vars.ZONE }}
       ENVIRONMENT: ${{ vars.ENVIRONMENT }}
+      ARTIFACT_REPO: ${{ vars.ARTIFACT_REPO }}
+      IMAGE_NAME: ${{ vars.IMAGE_NAME }}
 
     steps:
       - name: Checkout source code
@@ -66,8 +68,6 @@ jobs:
     env:
       PROJECT_ID: ${{ vars.PROJECT_ID }}
       REGION: ${{ vars.REGION }}
-      IMAGE_NAME: "latam-data-challenge"
-      ARTIFACT_REPO: "latam-data-challenge-repo"
 
     steps:
       - name: Checkout source code
@@ -84,6 +84,17 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: |
           gcloud auth configure-docker ${REGION}-docker.pkg.dev
+
+      - name: Ensure Artifact Registry exists
+        run: |
+          gcloud artifacts repositories describe ${ARTIFACT_REPO} \
+            --location=${REGION} \
+            --project=${PROJECT_ID} \
+          || gcloud artifacts repositories create ${ARTIFACT_REPO} \
+            --repository-format=docker \
+            --location=${REGION} \
+            --project=${PROJECT_ID} \
+            --description="Docker repo for latam data challenge"
 
       - name: Build Docker image
         run: |
