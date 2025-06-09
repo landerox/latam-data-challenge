@@ -13,7 +13,6 @@ google-cloud-bigquery = "^3.34.0"
 google-cloud-storage = "^3.1.0"
 memory-profiler = "^0.61.0"
 pandas = "^2.3.0"
-pydantic = "^2.11.5"
 python-dotenv = "^1.1.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -22,6 +21,7 @@ pre-commit = "^4.2.0"
 ruff = "^0.11.13"
 bandit = "^1.8.3"
 pyright = "^1.1.401"
+ipykernel = "^6.29.5"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

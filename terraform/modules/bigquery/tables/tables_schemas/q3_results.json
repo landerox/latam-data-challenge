@@ -1,15 +1,15 @@
 [
   {
-    "description": "Date of tweet activity",
+    "description": "Mentioned username",
     "mode": "NULLABLE",
-    "name": "tweet_date",
-    "type": "DATE"
+    "name": "username",
+    "type": "STRING"
   },
   {
-    "description": "Username with the most tweets on that date",
+    "description": "Total number of mentions",
     "mode": "NULLABLE",
-    "name": "top_user",
-    "type": "STRING"
+    "name": "mention_count",
+    "type": "INTEGER"
   },
   {
     "description": "Method used: 'time' or 'memory'",

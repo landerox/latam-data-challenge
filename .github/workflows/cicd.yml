@@ -53,8 +53,8 @@ jobs:
             -var="zone=$ZONE" \
             -var="environment=$ENVIRONMENT"
 
-      - name: Terraform Apply (only on main)
-        if: github.ref == 'refs/heads/main'
+      - name: Terraform Apply (main or develop)
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
         run: |
           terraform -chdir=terraform apply -auto-approve \
             -var="project_id=$PROJECT_ID" \
@@ -109,12 +109,12 @@ jobs:
           docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/${IMAGE_NAME}:latest .
 
       - name: Push image to Artifact Registry
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
         run: |
           docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/${IMAGE_NAME}:latest
 
       - name: Deploy to Cloud Run Job
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
         run: |
           gcloud run jobs deploy $CLOUD_RUN_JOB_NAME \
             --image=${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/${IMAGE_NAME}:latest \
@@ -133,7 +133,7 @@ jobs:
             --no-async
 
       - name: Run Cloud Run Job
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
         run: |
           gcloud run jobs execute $CLOUD_RUN_JOB_NAME \
             --project=${PROJECT_ID} \

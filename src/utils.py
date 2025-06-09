@@ -5,13 +5,14 @@ Module provides configuration retrieval and BigQuery helper functions.
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, date
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 from zoneinfo import ZoneInfo
+import tempfile
 
 from google.cloud import bigquery, storage
-import tempfile
+from google.api_core.exceptions import NotFound, Forbidden, BadRequest, GoogleAPIError
 
 
 def get_config_value(key: str) -> str:
@@ -56,6 +57,7 @@ def save_results_to_bq(
 
     # Use America/Santiago timezone for ingestion timestamp
     ingested_at = datetime.now(ZoneInfo("America/Santiago")).isoformat()
+    partition_filter = date.today().isoformat()
 
     # Prepare rows to insert based on question type
     rows_to_insert: List[Dict[str, Any]] = []
@@ -90,8 +92,26 @@ def save_results_to_bq(
                 }
             )
 
-    # Truncate table before inserting new results
-    client.query(f"DELETE FROM `{table_id}` WHERE TRUE").result()  # nosec
+    # Delete only data in today's partition
+    delete_query = f"""
+    DELETE FROM `{table_id}`
+    WHERE DATE(ingested_at) = "{partition_filter}"
+        AND method = "{method}"
+    """  # nosec B608
+
+    try:
+        client.query(delete_query).result()
+    except NotFound:
+        logging.warning("Table not found: %s. Will attempt to insert anyway.", table_id)
+    except Forbidden:
+        logging.error("Permission denied when trying to delete from %s", table_id)
+        return
+    except BadRequest as e:
+        logging.error("BadRequest deleting from table: %s | %s", table_id, e)
+        return
+    except GoogleAPIError as e:
+        logging.error("GoogleAPIError during DELETE: %s", e)
+        return
 
     errors = client.insert_rows_json(table_id, rows_to_insert)
     if errors:
