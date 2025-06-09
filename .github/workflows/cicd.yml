@@ -37,7 +37,10 @@ jobs:
       - name: Terraform Validate
         run: terraform -chdir=terraform validate
 
-      - name: Terraform Plan
+      - name: Terraform Plan (debug)
+        timeout-minutes: 5
+        env:
+          TF_LOG: DEBUG
         run: |
           terraform -chdir=terraform plan \
             -var="project_id=$PROJECT_ID" \
