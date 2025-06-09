@@ -1,4 +1,4 @@
-name: CI/CD
+name: 'CI/CD'
 
 on:
   push:
@@ -10,25 +10,23 @@ on:
 jobs:
   terraform-plan:
     runs-on: ubuntu-latest
-    env:
-      GOOGLE_CREDENTIALS: ${{ secrets.SA_TERRAFORM_KEY }}
-      PROJECT_ID: ${{ vars.PROJECT_ID }}
-      REGION: ${{ vars.REGION }}
     steps:
       - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v1
       - name: Create credentials file
-        run: echo "${{ secrets.SA_TERRAFORM_KEY }}" > ${{ github.workspace }}/sa-terraform.json
+        run: echo "${{ secrets.SA_TERRAFORM_KEY }}" > sa-terraform.json
       - name: Terraform Init
         run: terraform -chdir=terraform init
+      - name: Terraform Format
+        run: terraform -chdir=terraform fmt -check
       - name: Terraform Plan
-        id: plan
-        run: |
-          terraform -chdir=terraform plan \
-            -out=tfplan.txt \
-            -var="credentials_file=${{ github.workspace }}/sa-terraform.json" \
-            -var="project_id=$PROJECT_ID" \
-            -var="region=$REGION"
+        run: terraform -chdir=terraform plan \
+                -input=false \
+                -no-color \
+                -out=tfplan.txt \
+                -var="credentials_file=sa-terraform.json" \
+                -var="project_id=${{ vars.PROJECT_ID }}" \
+                -var="region=${{ vars.REGION }}"
       - name: Show Terraform Plan
         run: terraform -chdir=terraform show tfplan.txt
 
@@ -38,20 +36,16 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: cloud
-    env:
-      GOOGLE_CREDENTIALS: ${{ secrets.SA_TERRAFORM_KEY }}
-      PROJECT_ID: ${{ vars.PROJECT_ID }}
-      REGION: ${{ vars.REGION }}
     steps:
       - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v1
       - name: Create credentials file
-        run: echo "${{ secrets.SA_TERRAFORM_KEY }}" > ${{ github.workspace }}/sa-terraform.json
+        run: echo "${{ secrets.SA_TERRAFORM_KEY }}" > sa-terraform.json
       - name: Terraform Init
         run: terraform -chdir=terraform init
       - name: Terraform Apply
-        run: |
-          terraform -chdir=terraform apply -auto-approve \
-            -var="credentials_file=${{ github.workspace }}/sa-terraform.json" \
-            -var="project_id=$PROJECT_ID" \
-            -var="region=$REGION"
+        run: terraform -chdir=terraform apply -auto-approve \
+                -input=false \
+                -var="credentials_file=sa-terraform.json" \
+                -var="project_id=${{ vars.PROJECT_ID }}" \
+                -var="region=${{ vars.REGION }}"
