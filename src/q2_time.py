@@ -10,6 +10,8 @@ from typing import List, Tuple
 
 import pandas as pd
 
+from utils import get_local_file_path
+
 
 def q2_time(file_path: str, top_n: int = 10) -> List[Tuple[str, int]]:
     """
@@ -22,7 +24,9 @@ def q2_time(file_path: str, top_n: int = 10) -> List[Tuple[str, int]]:
     Returns:
         List of tuples: (emoji, count).
     """
+    file_path = get_local_file_path(file_path)
     tweet_contents = []
+
     with open(file_path, encoding="utf-8") as infile:
         for raw_line in infile:
             try:
@@ -48,7 +52,6 @@ def q2_time(file_path: str, top_n: int = 10) -> List[Tuple[str, int]]:
         flags=re.UNICODE,
     )
 
-    # Use pandas Series for fast string ops
     content_series = pd.Series(tweet_contents)
     all_emojis = content_series.str.findall(emoji_pattern).explode()
     emoji_counts = all_emojis.value_counts().head(top_n)

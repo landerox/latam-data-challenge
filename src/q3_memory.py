@@ -8,6 +8,8 @@ from typing import List, Tuple
 import json
 from collections import Counter
 
+from utils import get_local_file_path
+
 
 def q3_memory(file_path: str, top_n: int = 10) -> List[Tuple[str, int]]:
     """
@@ -20,7 +22,9 @@ def q3_memory(file_path: str, top_n: int = 10) -> List[Tuple[str, int]]:
     Returns:
         List of tuples: (username, mention_count).
     """
+    file_path = get_local_file_path(file_path)
     mention_counter = Counter()
+
     with open(file_path, encoding="utf-8") as infile:
         for raw_line in infile:
             try:
