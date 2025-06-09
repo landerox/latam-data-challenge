@@ -6,7 +6,7 @@ Uses argparse for parameters and logging for output.
 
 import argparse
 import logging
-from typing import NoReturn, Any, List, Tuple
+from typing import Any, List, Tuple
 
 from q1_memory import q1_memory
 from q1_time import q1_time
@@ -56,7 +56,7 @@ def get_result(
         raise ValueError(f"Unknown question: {question}")
 
 
-def main() -> NoReturn:
+def main() -> None:
     """
     Runs the selected Q solution with the given parameters.
 
@@ -66,9 +66,9 @@ def main() -> NoReturn:
     parser = argparse.ArgumentParser(description="Run data challenge Q solutions.")
     parser.add_argument(
         "--question",
-        choices=["q1", "q2", "q3"],
+        choices=["q1", "q2", "q3", "all"],
         default="q1",
-        help="Which question to solve: 'q1', 'q2', or 'q3'.",
+        help="Which question to solve: 'q1', 'q2', 'q3', or 'all'.",
     )
     parser.add_argument(
         "--method",
@@ -95,11 +95,29 @@ def main() -> NoReturn:
         "Question: %s | Method: %s | Top N: %d", args.question, args.method, args.top_n
     )
 
-    # Execute and get the result
+    if args.question == "all":
+        for q in ["q1", "q2", "q3"]:
+            logging.info("Processing %s...", q)
+            result = get_result(q, args.method, file_path, args.top_n)
+            logging.info("Result: %s", result)
+
+            if args.save_bq:
+                if not project_id or not dataset_id:
+                    logging.error("PROJECT_ID or DATASET_ID missing in config.json.")
+                else:
+                    save_results_to_bq(
+                        result=result,
+                        question=q,
+                        method=args.method,
+                        project_id=project_id,
+                        dataset_id=dataset_id,
+                    )
+        return  # Exit after processing all questions
+
+    # Execute and get the result for a single question
     result = get_result(args.question, args.method, file_path, args.top_n)
     logging.info("Result: %s", result)
 
-    # Optionally save results to BigQuery
     if args.save_bq:
         if not project_id or not dataset_id:
             logging.error("PROJECT_ID or DATASET_ID missing in config.json.")
