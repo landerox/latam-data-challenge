@@ -41,10 +41,9 @@ jobs:
       - name: Terraform Validate
         run: terraform -chdir=terraform validate
 
-      - name: Terraform Plan (debug)
-        timeout-minutes: 5
-        env:
-          TF_LOG: DEBUG
+      - name: Terraform Plan
+        # Run plan on both develop and main
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
         run: |
           terraform -chdir=terraform plan \
             -var="project_id=$PROJECT_ID" \
@@ -53,8 +52,8 @@ jobs:
             -var="zone=$ZONE" \
             -var="environment=$ENVIRONMENT"
 
-      - name: Terraform Apply (main or develop)
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+      - name: Terraform Apply (main only)
+        if: github.ref == 'refs/heads/main'
         run: |
           terraform -chdir=terraform apply -auto-approve \
             -var="project_id=$PROJECT_ID" \
@@ -105,16 +104,20 @@ jobs:
             --description="Docker repo for latam data challenge"
 
       - name: Build Docker image
+        # Build on both develop and main
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
         run: |
           docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/${IMAGE_NAME}:latest .
 
       - name: Push image to Artifact Registry
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        # Push only on main
+        if: github.ref == 'refs/heads/main'
         run: |
           docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/${IMAGE_NAME}:latest
 
       - name: Deploy to Cloud Run Job
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        # Deploy only on main
+        if: github.ref == 'refs/heads/main'
         run: |
           gcloud run jobs deploy $CLOUD_RUN_JOB_NAME \
             --image=${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/${IMAGE_NAME}:latest \
@@ -133,7 +136,8 @@ jobs:
             --no-async
 
       - name: Run Cloud Run Job
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        # Run only on main
+        if: github.ref == 'refs/heads/main'
         run: |
           gcloud run jobs execute $CLOUD_RUN_JOB_NAME \
             --project=${PROJECT_ID} \
