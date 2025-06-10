@@ -44,44 +44,70 @@ El proyecto incluye:
 .
 ├── Dockerfile                      # Dockerización del proyecto
 ├── LICENSE                         # Licencia del proyecto
-├── README.md                       # Documentación principal
-├── exploration/                    # Scripts para exploración inicial de datos
-│   ├── explore_tweets_q1.py
-│   ├── explore_tweets_q2.py
-│   └── explore_tweets_q3.py
-├── notebooks/                      # Cuaderno Jupyter con análisis detallado
-│   └── challenge_analysis.ipynb
-├── poetry.lock                     # Archivo lock generado por Poetry
-├── pyproject.toml                  # Configuración del proyecto con Poetry
+├── README.md                       # Documentación principal del proyecto
+├── diagram/                        # Diagramas y documentación visual
+│   └── architecture.txt            # Descripción textual de la arquitectura
+├── exploration/                    # Scripts y logs para exploración inicial de datos
+│   ├── explore_tweets_q1.py        # Exploración de datos para el problema 1
+│   ├── explore_tweets_q2.py        # Exploración de datos para el problema 2
+│   ├── explore_tweets_q3.py        # Exploración de datos para el problema 3
+│   ├── tweet_explore_q1.log        # Log de resultados de exploración Q1
+│   ├── tweet_explore_q2.log        # Log de resultados de exploración Q2
+│   └── tweet_explore_q3.log        # Log de resultados de exploración Q3
+├── notebooks/                      # Cuadernos Jupyter con análisis detallados
+│   └── challenge_analysis.ipynb    # Análisis exploratorio y visualización de datos
+├── poetry.lock                     # Archivo lock de dependencias (Poetry)
+├── pyproject.toml                  # Configuración del proyecto para Poetry
+├── pytest.ini                      # Configuración de pytest para tests automáticos
 ├── requirements.txt                # Dependencias del proyecto para pip
-├── src/                            # Código fuente
-│   ├── config.json                 # Configuración GCP y dataset
-│   ├── main.py                     # CLI principal con argparse
-│   ├── q1_memory.py                # Problema 1 optimizado para memoria
-│   ├── q1_time.py                  # Problema 1 optimizado para tiempo
-│   ├── q2_memory.py                # Problema 2 optimizado para memoria
-│   ├── q2_time.py                  # Problema 2 optimizado para tiempo
-│   ├── q3_memory.py                # Problema 3 optimizado para memoria
-│   ├── q3_time.py                  # Problema 3 optimizado para tiempo
-│   └── utils.py                    # Utilidades comunes (GCS, BigQuery, configuración)
-└── terraform/                      # Infraestructura como Código (IaC)
-    ├── Makefile                    # Automatización de tareas
-    ├── backend.tf                  # Configuración del backend de Terraform
-    ├── main.tf                     # Recursos principales en Terraform
-    ├── modules/                    # Módulos reutilizables
-    │   ├── bigquery/               # Configuración de BigQuery
-    │   │   ├── dataset/            # Creación de dataset
-    │   │   └── tables/             # Creación de tablas
-    │   │       └── tables_schemas/ # Esquemas JSON para tablas
-    │   │           ├── q1_results.json
-    │   │           ├── q2_results.json
-    │   │           └── q3_results.json
-    │   ├── bucket/                 # Configuración de Cloud Storage
-    │   └── serviceAccount/         # Configuración de cuenta de servicio
-    ├── outputs.tf                  # Outputs definidos en Terraform
-    ├── variables.tf                # Variables configurables en Terraform
-    ├── terraform.tfvars.example    # Ejemplo de archivo de variables
-    └── versions.tf                 # Versionado de providers
+├── src/                            # Código fuente principal
+│   ├── config.json                 # Configuración de GCP y datasets
+│   ├── main.py                     # CLI principal del proyecto
+│   ├── q1_memory.py                # Solución problema 1 optimizada para memoria
+│   ├── q1_time.py                  # Solución problema 1 optimizada para tiempo
+│   ├── q2_memory.py                # Solución problema 2 optimizada para memoria
+│   ├── q2_time.py                  # Solución problema 2 optimizada para tiempo
+│   ├── q3_memory.py                # Solución problema 3 optimizada para memoria
+│   ├── q3_time.py                  # Solución problema 3 optimizada para tiempo
+│   └── utils.py                    # Funciones utilitarias comunes (GCS, BQ, helpers)
+├── terraform/                      # Infraestructura como Código (IaC) - Terraform
+│   ├── Makefile                    # Automatización de tareas Terraform
+│   ├── backend.tf                  # Configuración del backend de Terraform
+│   ├── main.tf                     # Recursos principales de Terraform
+│   ├── modules/                    # Módulos reutilizables de Terraform
+│   │   ├── bigquery/               # Configuración de recursos BigQuery
+│   │   │   ├── dataset/            # Definición del dataset de BigQuery
+│   │   │   │   ├── main.tf         # Recurso para crear el dataset
+│   │   │   │   ├── output.tf       # Outputs del dataset
+│   │   │   │   └── variables.tf    # Variables del módulo de dataset
+│   │   │   └── tables/             # Definición de tablas de BigQuery
+│   │   │       ├── main.tf         # Recurso para crear tablas
+│   │   │       ├── output.tf       # Outputs de las tablas
+│   │   │       ├── tables_schemas/ # Esquemas JSON de las tablas
+│   │   │       │   ├── q1_results.json
+│   │   │       │   ├── q2_results.json
+│   │   │       │   └── q3_results.json
+│   │   │       └── variables.tf    # Variables del módulo de tablas
+│   │   ├── bucket/                 # Configuración de buckets de Cloud Storage
+│   │   │   ├── main.tf             # Recurso para crear bucket
+│   │   │   ├── outputs.tf          # Outputs del bucket
+│   │   │   └── variables.tf        # Variables del módulo de bucket
+│   │   └── serviceAccount/         # Configuración de cuentas de servicio
+│   │       ├── main.tf             # Recurso para crear service account
+│   │       ├── outputs.tf          # Outputs de la service account
+│   │       └── variables.tf        # Variables del módulo de service account
+│   ├── outputs.tf                  # Outputs globales de Terraform
+│   ├── sa/                         # Archivos de cuentas de servicio (ejemplo)
+│   │   └── sa-terraform.json       # Clave de cuenta de servicio para Terraform
+│   ├── terraform.tfvars.example    # Ejemplo de archivo de variables (ejemplo)
+│   ├── tfplan                      # Plan de ejecución de Terraform (temporal)
+│   ├── variables.tf                # Definición de variables globales
+│   └── versions.tf                 # Versionado de providers y Terraform
+└── tests/                          # Tests unitarios del proyecto
+    ├── test_q1.py                  # Tests para el problema 1
+    ├── test_q2.py                  # Tests para el problema 2
+    ├── test_q3.py                  # Tests para el problema 3
+    └── test_utils.py               # Tests para funciones utilitarias
 ```
 
 ## 🚀 Instalación y Configuración
