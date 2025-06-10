@@ -36,3 +36,4 @@ repos:
     rev: 1.8.3
     hooks:
       - id: bandit   # Identify potential security issues in Python code
+        exclude: ^tests/

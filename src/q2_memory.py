@@ -1,5 +1,4 @@
-"""q2_memory.
-
+"""
 Module for finding the top N most used emojis in tweets.
 Optimized for low memory usage by processing the file line by line.
 """
@@ -26,6 +25,7 @@ def q2_memory(file_path: str, top_n: int = 10) -> List[Tuple[str, int]]:
     file_path = get_local_file_path(file_path)
     emoji_counter = Counter()
 
+    # Changed: removed "+" so each emoji is matched individually.
     emoji_pattern = re.compile(
         "["
         "\U0001f600-\U0001f64f"
@@ -34,7 +34,7 @@ def q2_memory(file_path: str, top_n: int = 10) -> List[Tuple[str, int]]:
         "\U0001f1e0-\U0001f1ff"
         "\U00002700-\U000027bf"
         "\U000024c2-\U0001f251"
-        "]+",
+        "]",
         flags=re.UNICODE,
     )
 
