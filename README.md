@@ -6,548 +6,347 @@
 
 </div>
 
-# Desafío LATAM Airlines
-Este proyecto resuelve el desafío de ingeniería de datos enfocado en procesamiento eficiente de grandes volúmenes de tweets (~398MB), optimizando tanto memoria como tiempo de ejecución para el análisis de datos de Twitter.
+# Análisis de Tweets - Desafío Ingeniería de Datos LATAM Airlines
 
-**Repositorio GitHub:** [latam-data-challenge](https://github.com/landerox/latam-data-challenge)
+Solución al desafío de procesamiento eficiente de ~398MB de datos de Twitter (farmers-protest-tweets-2021-2-4.json), implementando optimizaciones de memoria y tiempo con Python y Google Cloud Platform.
 
-### Descripción del Challenge
+## 📋 Resumen del Desafío
 
-El desafío consiste en procesar un dataset de tweets para resolver tres problemas principales:
+El dataset contiene tweets relacionados con las protestas de agricultores en India (2021), con más de 400K registros. El desafío consiste en procesar eficientemente este volumen de datos para extraer insights clave, priorizando ya sea velocidad de ejecución o uso mínimo de memoria RAM.
 
-1. **Top 10 fechas con más tweets** y el usuario más activo por día
-2. **Top 10 emojis más usados** con su conteo respectivo  
-3. **Top 10 usuarios más influyentes** basado en menciones (@)
+## 🎯 Descripción del Proyecto
 
-Cada problema debe implementarse con **dos enfoques**:
-- **Optimización de tiempo**: Máxima velocidad de procesamiento
-- **Optimización de memoria**: Uso mínimo de recursos de memoria
+El proyecto resuelve tres problemas de análisis de datos (questions/preguntas):
 
-### Estructura del Repositorio
+1. **Q1**: Top 10 fechas con más tweets, identificando el usuario más activo por día
+2. **Q2**: Top 10 emojis más utilizados con sus conteos
+3. **Q3**: Top 10 usuarios más mencionados en tweets
+
+Cada problema (`qX_*.py` donde X es el número de pregunta) tiene dos implementaciones:
+- **time**: Optimizada para tiempo de ejecución usando pandas
+- **memory**: Optimizada para consumo de memoria procesamiento línea a línea.
+
+**Contexto del Dataset:** El archivo JSON contiene ~400K tweets relacionados con las protestas de agricultores en India durante 2021, recopilados de Twitter.
+
+## ⚙️ Arquitectura
+
+El proyecto incluye:
+- Procesamiento de datos con Python y Pandas
+- Infraestructura en GCP (Storage, BigQuery, Cloud Run)
+- CI/CD automatizado con GitHub Actions  
+- Infraestructura como código con Terraform
+- Análisis de rendimiento con memory-profiler
+- Pre-commit hooks (Ruff para linting/formato, Bandit para seguridad)
+
+## 📁 Estructura del Proyecto
 
 ```
 .
-├── Dockerfile                      # Configuración para containerización
+├── Dockerfile                      # Dockerización del proyecto
 ├── LICENSE                         # Licencia del proyecto
 ├── README.md                       # Documentación principal
-├── exploration/                    # Scripts de exploración de datos
+├── exploration/                    # Scripts para exploración inicial de datos
 │   ├── explore_tweets_q1.py
 │   ├── explore_tweets_q2.py
 │   └── explore_tweets_q3.py
-├── notebooks/                      # Análisis detallado en Jupyter
+├── notebooks/                      # Cuaderno Jupyter con análisis detallado
 │   └── challenge_analysis.ipynb
-├── poetry.lock                     # Lock file de Poetry
-├── pyproject.toml                  # Configuración del proyecto
-├── requirements.txt                # Dependencies para pip
-├── src/                           # Código fuente principal
-│   ├── config.json                # Configuración GCP y dataset
-│   ├── main.py                    # CLI principal con argparse
-│   ├── q1_memory.py               # Pregunta 1 - optimizado para memoria
-│   ├── q1_time.py                 # Pregunta 1 - optimizado para tiempo
-│   ├── q2_memory.py               # Pregunta 2 - optimizado para memoria
-│   ├── q2_time.py                 # Pregunta 2 - optimizado para tiempo
-│   ├── q3_memory.py               # Pregunta 3 - optimizado para memoria
-│   ├── q3_time.py                 # Pregunta 3 - optimizado para tiempo
-│   └── utils.py                   # Utilidades: GCS, BigQuery, config
-└── terraform/                     # Infraestructura como Código
-    ├── Makefile                   # Comandos de automatización
-    ├── backend.tf                 # Configuración del backend
-    ├── main.tf                    # Recursos principales
-    ├── modules/                   # Módulos reutilizables
-    │   ├── bigquery/             # Módulo BigQuery
-    │   │   ├── dataset/          # Creación de dataset
-    │   │   └── tables/           # Creación de tablas
-    │   │       └── tables_schemas/  # Esquemas JSON
+├── poetry.lock                     # Archivo lock generado por Poetry
+├── pyproject.toml                  # Configuración del proyecto con Poetry
+├── requirements.txt                # Dependencias del proyecto para pip
+├── src/                            # Código fuente
+│   ├── config.json                 # Configuración GCP y dataset
+│   ├── main.py                     # CLI principal con argparse
+│   ├── q1_memory.py                # Problema 1 optimizado para memoria
+│   ├── q1_time.py                  # Problema 1 optimizado para tiempo
+│   ├── q2_memory.py                # Problema 2 optimizado para memoria
+│   ├── q2_time.py                  # Problema 2 optimizado para tiempo
+│   ├── q3_memory.py                # Problema 3 optimizado para memoria
+│   ├── q3_time.py                  # Problema 3 optimizado para tiempo
+│   └── utils.py                    # Utilidades comunes (GCS, BigQuery, configuración)
+└── terraform/                      # Infraestructura como Código (IaC)
+    ├── Makefile                    # Automatización de tareas
+    ├── backend.tf                  # Configuración del backend de Terraform
+    ├── main.tf                     # Recursos principales en Terraform
+    ├── modules/                    # Módulos reutilizables
+    │   ├── bigquery/               # Configuración de BigQuery
+    │   │   ├── dataset/            # Creación de dataset
+    │   │   └── tables/             # Creación de tablas
+    │   │       └── tables_schemas/ # Esquemas JSON para tablas
     │   │           ├── q1_results.json
     │   │           ├── q2_results.json
     │   │           └── q3_results.json
-    │   ├── bucket/               # Módulo Cloud Storage
-    │   └── serviceAccount/       # Módulo Service Account
-    ├── outputs.tf                # Outputs de Terraform
-    ├── variables.tf              # Variables de configuración
-    ├── terraform.tfvars.example  # Ejemplo de configuración
-    └── versions.tf               # Versiones de providers
+    │   ├── bucket/                 # Configuración de Cloud Storage
+    │   └── serviceAccount/         # Configuración de cuenta de servicio
+    ├── outputs.tf                  # Outputs definidos en Terraform
+    ├── variables.tf                # Variables configurables en Terraform
+    ├── terraform.tfvars.example    # Ejemplo de archivo de variables
+    └── versions.tf                 # Versionado de providers
 ```
 
-### Flujo de Trabajo Completo
+## 🚀 Instalación y Configuración
 
-### 1. Setup Inicial (Una sola vez)
+### Prerrequisitos
+
+- Cuenta de Google Cloud Platform con permisos de administrador
+- Terraform >= 1.0
+- Google Cloud SDK (gcloud)
+- Python 3.12+ con Poetry
+- Docker (opcional)
+
+### Setup de Infraestructura
+
+#### 1. Configuración inicial del proyecto GCP:
+
+Navega a la carpeta  `terraform/`, edita las variables del archivo Makefile según tu configuración:
 ```bash
-# Clonar repositorio
-git clone https://github.com/landerox/latam-data-challenge
-cd latam-data-challenge
+# Variables de Makefile
+PROJECT_ID      ?= <PROJECT_ID>
+REGION          ?= <REGION>
+TF_BUCKET_NAME  ?= $(PROJECT_ID)-terraform-state
+SA_NAME         ?= sa-terraform
+SA_EMAIL        = $(SA_NAME)@$(PROJECT_ID).iam.gserviceaccount.com
+SA_KEY_FILE     ?= sa/sa-terraform.json
+```
+ y luego ejecuta los siguientes comandos:
+```
+# Configurar proyecto
+make set-project PROJECT_ID=<YOUR_PROJECT_ID>
 
-# Configurar infraestructura
-cd terraform
-make set-project PROJECT_ID=tu-project-id
+# Autenticarse en GCP
+make auth-login
+
+# Habilitar APIs necesarias
 make enable-apis
+
+# Crear cuenta de servicio para Terraform
 make create-sa
+
+# Asignar roles necesarios
 make add-sa-roles
+
+# Generar clave de cuenta de servicio (NO commitear)
 make create-sa-key
+
+# Crear bucket para estado de Terraform
 make create-tf-bucket
+```
 
-# Configurar variables
+#### 2. Configurar variables de Terraform:
+
+```bash
+# Copiar archivo de ejemplo
 cp terraform.tfvars.example terraform.tfvars
-# Editar terraform.tfvars
 
-# Aplicar infraestructura
-make init
-make apply
+# Editar terraform.tfvars con tus valores:
+project_id        = "<YOUR_PROJECT_ID>"
+repository_id     = "<YOUR_REPOSITORY_ID>"
+environment       = "<dev|staging|prod>"
+region            = "<YOUR_REGION>"
+zone              = "<YOUR_ZONE>"
+credentials_file  = "sa/sa-terraform.json"
 ```
 
-### 2. Configuración CI/CD (Una sola vez)
-```bash
-# En GitHub Repository Settings:
-# 1. Agregar Secrets: SA_TERRAFORM_KEY, SA_DEPLOYMENT_KEY
-# 2. Agregar Variables: PROJECT_ID, REGION, etc.
-# 3. Push a main/develop activa el pipeline automático
-```
-
-### 3. Ejecución de Análisis
-```bash
-# Automático via CI/CD (push a main/develop)
-git push origin main
-
-# Manual via Cloud Run Job
-gcloud run jobs execute latam-data-challenge-job \
-  --project=latam-data-challenge \
-  --region=us-east1 \
-  --args="src/main.py,--question,q1,--method,time,--save_bq" \
-  --wait
-
-# Local para desarrollo
-poetry run python src/main.py --question all --method memory
-```
-
-### Configuración de Infraestructura (IaC)
-
-#### Setup Inicial
-
-1. **Configuración de Terraform:**
-   ```bash
-   cd terraform
-   cp terraform.tfvars.example terraform.tfvars
-   # Edita terraform.tfvars con tus configuraciones
-   ```
-
-### Setup Inicial con Makefile
-
-1. **Configuración de proyecto:**
-   ```bash
-   cd terraform
-   make set-project PROJECT_ID=tu-project-id
-   make enable-apis
-   ```
-
-2. **Creación de Service Account:**
-   ```bash
-   make create-sa
-   make add-sa-roles
-   make create-sa-key  # ⚠️ NO commitear este archivo
-   ```
-
-3. **Bucket de Terraform:**
-   ```bash
-   make create-tf-bucket
-   ```
-
-4. **Configuración de variables:**
-   ```bash
-   cp terraform.tfvars.example terraform.tfvars
-   # Edita terraform.tfvars con tus valores
-   ```
-
-#### Recursos Creados
-
-La infraestructura automatizada crea:
-
-- **Bucket de Terraform State:** `gs://latam-data-challenge-terraform-state`
-- **Bucket de datos:** `gs://latam-data-challenge-data`
-- **Dataset BigQuery:** `challenge_data` con 3 tablas:
-  - `q1_results`: Fechas con más tweets y usuario más activo
-  - `q2_results`: Ranking de emojis más usados
-  - `q3_results`: Usuarios más mencionados
-- **Cuenta de servicio:** `sa-deployment` con roles:
-  - BigQuery Data Editor
-  - Storage Object Admin
-  - Cloud Run Developer
-
-#### Esquemas de BigQuery
-
-**Tabla q1_results:**
-```json
-{
-  "tweet_date": "DATE",
-  "top_user": "STRING", 
-  "method": "STRING",
-  "ingested_at": "TIMESTAMP"
-}
-```
-
-**Tabla q2_results:**
-```json
-{
-  "emoji": "STRING",
-  "count": "INTEGER",
-  "method": "STRING", 
-  "ingested_at": "TIMESTAMP"
-}
-```
-
-**Tabla q3_results:**
-```json
-{
-  "username": "STRING",
-  "mention_count": "INTEGER",
-  "method": "STRING",
-  "ingested_at": "TIMESTAMP"
-}
-```
-
-#### CI/CD Automático
-
-El pipeline ejecuta automáticamente en cada push a `main` o `develop`:
-
-**Job 1: Terraform Workflow**
-- `terraform plan` - Planificación de cambios
-- `terraform apply` - Aplicación de infraestructura (solo main/develop)
-
-**Job 2: Build & Deploy**
-- Build de imagen Docker
-- Push a Artifact Registry
-- Deploy como Cloud Run Job
-- Ejecución automática del análisis
-
-### Variables de Entorno Requeridas
-
-**GitHub Repository Variables:**
-```bash
-PROJECT_ID=latam-data-challenge
-REGION=us-east1
-ZONE=us-east1-b
-ARTIFACT_REPO=latam-data-challenge-repo
-IMAGE_NAME=latam-data-challenge
-CLOUD_RUN_JOB_NAME=latam-data-challenge-job
-ENVIRONMENT=dev
-REPOSITORY_ID=latam-data-challenge
-```
-
-**GitHub Repository Secrets:**
-```bash
-SA_TERRAFORM_KEY      # Service Account key para Terraform
-SA_DEPLOYMENT_KEY     # Service Account key para deployment
-```
-
-### Despliegue en Cloud Run Job
-
-El proyecto se despliega automáticamente como un **Cloud Run Job** mediante GitHub Actions. Una vez desplegado, el job puede ser ejecutado manualmente con diferentes parámetros.
-
-#### Configuración del Cloud Run Job
-
-```yaml
-# Configuración automática via CI/CD
-Resource: 2 CPU, 4Gi memoria
-Timeout: 3600s (1 hora)
-Service Account: sa-deployment@latam-data-challenge.iam.gserviceaccount.com
-Execution Environment: gen2
-Max Retries: 1
-```
-
-#### Ejecución Manual desde Cloud Shell
-
-Una vez desplegado, puedes ejecutar el job con diferentes configuraciones:
+#### 3. Desplegar infraestructura con Terraform:
 
 ```bash
-# Análisis completo (todas las preguntas, método tiempo)
-gcloud run jobs execute latam-data-challenge-job \
-  --project=latam-data-challenge \
-  --region=us-east1 \
-  --wait
+# Inicializar Terraform
+terraform init
 
-# Solo pregunta 1 optimizada para memoria
-gcloud run jobs execute latam-data-challenge-job \
-  --project=latam-data-challenge \
-  --region=us-east1 \
-  --overrides='
-  {
-    "spec": {
-      "template": {
-        "spec": {
-          "template": {
-            "spec": {
-              "containers": [
-                {
-                  "args": ["src/main.py", "--question", "q1", "--method", "memory", "--save_bq"]
-                }
-              ]
-            }
-          }
-        }
-      }
-    }
-  }' \
-  --wait
+# Revisar plan de ejecución
+terraform plan
 
-# Top 5 emojis con método tiempo
-gcloud run jobs execute latam-data-challenge-job \
-  --project=latam-data-challenge \
-  --region=us-east1 \
-  --overrides='
-  {
-    "spec": {
-      "template": {
-        "spec": {
-          "template": {
-            "spec": {
-              "containers": [
-                {
-                  "args": ["src/main.py", "--question", "q2", "--method", "time", "--top_n", "5", "--save_bq"]
-                }
-              ]
-            }
-          }
-        }
-      }
-    }
-  }' \
-  --wait
+# Aplicar cambios
+terraform apply
 ```
 
-#### Comandos Simplificados
+### Configuración CI/CD
 
-Para facilitar la ejecución, puedes usar estos comandos más simples:
+En GitHub Repository Settings agregar:
+
+**Secrets:**
+- `SA_TERRAFORM_KEY`: JSON de cuenta de servicio Terraform
+- `SA_DEPLOYMENT_KEY`: JSON de cuenta de servicio deployment
+
+**Variables:**
+- `PROJECT_ID`: `<YOUR_PROJECT_ID>`
+- `REGION`: `<YOUR_REGION>`
+- `ZONE`: `<YOUR_ZONE>`
+- `ARTIFACT_REPO`: `<YOUR_ARTIFACT_REPO_NAME>`
+- `IMAGE_NAME`: `<YOUR_IMAGE_NAME>`
+- `CLOUD_RUN_JOB_NAME`: `<YOUR_JOB_NAME>`
+- `ENVIRONMENT`: `<dev|staging|prod>`
+- `REPOSITORY_ID`: `<YOUR_REPOSITORY_ID>`
+
+## 💻 Uso del Sistema
+
+### Ejecución Local
 
 ```bash
-# Variables de entorno
-export PROJECT_ID="latam-data-challenge"
-export REGION="us-east1"
-export JOB_NAME="latam-data-challenge-job"
+poetry install
+export GOOGLE_APPLICATION_CREDENTIALS="<PATH_TO_SERVICE_ACCOUNT_KEY>.json"
 
 # Ejecutar análisis específico
-gcloud run jobs execute $JOB_NAME \
-  --project=$PROJECT_ID \
-  --region=$REGION \
-  --args="src/main.py,--question,q3,--method,memory,--top_n,15,--save_bq" \
+poetry run python src/main.py --question q1 --method time
+
+# Ejecutar todo y guardar en BigQuery
+poetry run python src/main.py --question all --method memory --save_bq
+
+# Personalizar top N resultados
+poetry run python src/main.py --question q2 --method time --top_n 5
+```
+
+### Ejecución en Cloud Run
+
+```bash
+# Ejecutar job con configuración por defecto
+gcloud run jobs execute <YOUR_CLOUD_RUN_JOB_NAME> \
+  --project=<YOUR_PROJECT_ID> \
+  --region=<YOUR_REGION> \
+  --wait
+
+# Ejecutar análisis específico
+gcloud run jobs execute <YOUR_CLOUD_RUN_JOB_NAME> \
+  --project=<YOUR_PROJECT_ID> \
+  --region=<YOUR_REGION> \
+  --args="src/main.py,--question,q1,--method,memory,--save_bq" \
   --wait
 ```
 
-### Configuración Local para Desarrollo
-
-#### Ejecución Local
+### Docker Local
 
 ```bash
-# Instalar dependencias
-poetry install
-
-# Configurar variable de entorno para testing local
-export GOOGLE_APPLICATION_CREDENTIALS="path/to/service-account-key.json"
-
-# Ejecutar localmente
-poetry run python src/main.py --question q1 --method time --top_n 5
-
-# Con archivo local (sin Cloud Storage)
-poetry run python src/main.py --question all --method memory --top_n 10
-```
-
-#### Docker Local
-
-```bash
-# Build imagen localmente
-docker build -t latam-data-challenge .
-
-# Ejecutar contenedor
+docker build -t <YOUR_IMAGE_NAME> .
 docker run --rm \
-  -v /path/to/service-account.json:/app/sa.json \
+  -v <PATH_TO_SERVICE_ACCOUNT_KEY>.json:/app/sa.json \
   -e GOOGLE_APPLICATION_CREDENTIALS=/app/sa.json \
-  latam-data-challenge \
-  python src/main.py --question q2 --method time --save_bq
+  <YOUR_IMAGE_NAME> \
+  python src/main.py --question all --method time
 ```
 
-#### Ejemplos de Uso
+## 📊 Parámetros CLI (Interfaz de línea de comandos)
 
+| Parámetro | Valores posibles | Default | Descripción |
+|-----------|------------------|---------|-------------|
+| `--question` | q1, q2, q3, all | all | Qué análisis ejecutar |
+| `--method` | time, memory | time | Optimización por tiempo o memoria |
+| `--top_n` | entero positivo | 10 | Número de resultados a retornar |
+| `--save_bq` | (flag) | false | Guardar resultados en BigQuery |
+
+## 📈 Rendimiento y Resultados
+
+Basado en el análisis del notebook con 398MB de tweets:
+
+### Q1 - Top fechas con más tweets
+- **Método time**: ~5 segundos, ~207 MiB RAM
+- **Método memory**: ~4.5 segundos, ~205 MiB RAM
+- **Conclusión**: Rendimiento similar, ambos métodos son eficientes
+
+### Q2 - Top emojis más usados  
+- **Método time**: ~5.65 segundos, ~211 MiB RAM
+- **Método memory**: ~70 segundos, ~210 MiB RAM
+- **Conclusión**: El método optimizado para tiempo es ~12x más rápido sin penalizar el uso de memoria
+
+### Q3 - Usuarios más mencionados
+- **Método time**: ~5.49 segundos, ~210 MiB RAM
+- **Método memory**: ~4.58 segundos, ~210 MiB RAM
+- **Conclusión**: Rendimiento prácticamente idéntico
+
+### Formato de Resultados
+
+**Q1**: Lista de tuplas (fecha, usuario)
+```python
+[(datetime.date(2021, 2, 12), "narendramodi"), ...]
+```
+
+**Q2**: Lista de tuplas (emoji, conteo)
+```python
+[("🙏", 5049), ("😂", 3072), ...]
+```
+
+**Q3**: Lista de tuplas (usuario, menciones)
+```python
+[("narendramodi", 2265), ...]
+```
+
+## ☁️ Recursos GCP Creados
+
+**Buckets:**
+- `<YOUR_PROJECT_ID>-terraform-state`: Estado de Terraform
+- `<YOUR_DATA_BUCKET_NAME>`: Almacenamiento de datos
+
+**BigQuery:**
+- Dataset: `<YOUR_BIGQUERY_DATASET>`
+- Tablas: `q1_results`, `q2_results`, `q3_results`
+
+**Service Accounts:**
+- `sa-terraform`: Gestión de infraestructura
+- `sa-deployment`: Ejecución de aplicación
+
+**Cloud Run:**
+- Job con 2 CPU, 4Gi memoria
+- Timeout: 1 hora
+- Environment: gen2
+
+## 🔄 Pipeline CI/CD
+
+El pipeline se activa con push a main o develop:
+
+1. **Terraform**: Planifica y aplica cambios de infraestructura
+2. **Docker**: Construye imagen y la sube a Artifact Registry
+3. **Deploy**: Actualiza Cloud Run Job
+4. **Ejecuta**: Corre análisis automáticamente
+
+## 🧹 Limpieza
+
+Para eliminar archivos sensibles locales:
 ```bash
-# Ejecutar pregunta 1 optimizada para tiempo
-poetry run python src/main.py --question q1 --method time
-
-# Ejecutar todas las preguntas optimizadas para memoria y guardar en BigQuery
-poetry run python src/main.py --question all --method memory --save_bq
-
-# Ejecutar pregunta 2 con top 5 resultados
-poetry run python src/main.py --question q2 --method time --top_n 5
-
-# Análisis completo: todas las preguntas con ambos métodos
-poetry run python src/main.py --question all --method time --save_bq
-poetry run python src/main.py --question all --method memory --save_bq
+cd terraform && make clean
 ```
 
-#### Estructura de Salida
-
-**Q1 - Top fechas con más tweets:**
-```python
-[(datetime.date(2021, 2, 12), "narendramodi"), 
- (datetime.date(2021, 2, 13), "SatyagrahF"), ...]
+Para destruir infraestructura:
+```bash
+cd terraform && terraform destroy
 ```
 
-**Q2 - Top emojis más usados:**
-```python  
-[("🙏", 5049), ("😂", 3072), ("🔥", 2972), ...]
-```
+## ⚙️ Archivos de Configuración
 
-**Q3 - Usuarios más mencionados:**
-```python
-[("narendramodi", 2265), ("Kisanektamorcha", 1840), ...]
-```
-
-### Estrategias de Optimización
-
-#### Time Optimization
-- **Pandas DataFrame**: Carga completa del dataset en memoria para operaciones vectorizadas
-- **Agregaciones eficientes**: Uso de `groupby()` y `value_counts()` de pandas
-- **Procesamiento por lotes**: Manejo de todo el dataset de una vez
-- **Indexación automática**: Aprovecha los índices internos de pandas para búsquedas rápidas
-
-#### Memory Optimization  
-- **Streaming line-by-line**: Procesamiento secuencial del archivo JSON Lines
-- **Collections.Counter**: Estructura de datos eficiente para conteos incrementales
-- **Liberación inmediata**: Variables se procesan y liberan línea por línea
-- **Sin carga completa**: El dataset nunca se carga completamente en memoria
-
-#### Implementaciones Específicas
-
-**Q1 - Top fechas y usuarios más activos:**
-- **Time**: Pandas groupby con agregaciones múltiples por fecha y usuario
-- **Memory**: Dict anidado `{date: {username: count}}` con procesamiento línea por línea
-
-**Q2 - Top emojis más usados:**
-- **Time**: Pandas Series con `str.findall()` y `explode()` para extraer emojis
-- **Memory**: Regex pattern con Counter incremental por cada tweet
-
-**Q3 - Usuarios más mencionados:**
-- **Time**: Lista plana de menciones con pandas `value_counts()`
-- **Memory**: Counter directo sobre el campo `mentionedUsers` de cada tweet
-
-### Buenas Prácticas Aplicadas
-
-- ✅ **Arquitectura modular**: Separación clara entre optimizaciones de tiempo y memoria
-- ✅ **Manejo robusto de errores**: Validación de JSON y campos requeridos
-- ✅ **Configuración centralizada**: `config.json` para parámetros de infraestructura
-- ✅ **Documentación completa**: Docstrings detallados en todas las funciones
-- ✅ **GitFlow workflow**: Ramas de desarrollo separadas del main
-- ✅ **Infrastructure as Code**: Terraform con módulos reutilizables
-- ✅ **CI/CD automatizado**: GitHub Actions para deploy continuo
-- ✅ **Logging estructurado**: Seguimiento detallado de ejecución
-- ✅ **Timezone awareness**: Manejo correcto de husos horarios
-- ✅ **Escalabilidad**: Diseño preparado para datasets más grandes
-- ✅ **Testing de integración**: Validación con datos reales
-- ✅ **Cleanup automático**: Eliminación de datos previos por partición
-
-### Supuestos del Proyecto
-
-- **Formato de datos**: JSON Lines con estructura de Twitter API v1
-- **Campos requeridos**: 
-  - `date`: Timestamp ISO 8601 del tweet
-  - `user.username`: Usuario autor del tweet
-  - `content`: Contenido textual para análisis de emojis
-  - `mentionedUsers`: Array de usuarios mencionados
-- **Encoding**: UTF-8 para caracteres especiales y emojis
-- **Timezone**: America/Santiago para timestamps de ingestión
-- **Manejo de errores**: Líneas malformadas se omiten silenciosamente
-- **Permisos GCP**: Service Account con acceso a Storage y BigQuery
-- **Recursos disponibles**: Suficiente memoria/CPU para dataset de ~398MB
-
-### Librerías Clave
-
-```python
-# Procesamiento de datos
-pandas>=1.5.0              # Análisis de datos y agregaciones
-numpy>=1.21.0              # Operaciones numéricas
-
-# Google Cloud Platform
-google-cloud-storage>=2.7.0   # Descarga desde Cloud Storage
-google-cloud-bigquery>=3.4.0  # Inserción de resultados
-
-# Análisis y profiling
-memory-profiler>=0.60.0    # Análisis de memoria (opcional)
-
-# Utilidades del sistema
-pathlib                    # Manejo de rutas (stdlib)
-tempfile                   # Archivos temporales (stdlib)
-collections.Counter        # Conteos eficientes (stdlib)
-json                       # Parsing JSON Lines (stdlib)
-re                         # Regex para emojis (stdlib)
-datetime                   # Manejo de fechas (stdlib)
-zoneinfo                   # Timezone Santiago (stdlib)
-```
-
-#### Configuración del Proyecto
-
-El archivo `src/config.json` contiene:
+**config.json** - Configuración del proyecto:
 ```json
 {
-  "BUCKET": "latam-data-challenge-data",
-  "DATASET_ID": "challenge_data", 
+  "BUCKET": "<YOUR_DATA_BUCKET_NAME>",
+  "DATASET_ID": "<YOUR_BIGQUERY_DATASET>", 
   "FILENAME": "farmers-protest-tweets-2021-2-4.json",
-  "PROJECT_ID": "latam-data-challenge"
+  "PROJECT_ID": "<YOUR_PROJECT_ID>"
 }
 ```
 
-### Monitoreo y Logs
+**pyproject.toml** - Dependencias principales:
+- `pandas`: Procesamiento de datos
+- `google-cloud-bigquery`: Integración con BigQuery
+- `google-cloud-storage`: Manejo de archivos en GCS
+- `memory-profiler`: Análisis de consumo de memoria
 
-#### Cloud Logging
+## 📓 Notebooks y Análisis
 
-Todos los logs se almacenan en Cloud Logging con etiquetas:
-```bash
-# Ver logs del Cloud Run Job
-gcloud logging read "resource.type=cloud_run_job AND resource.labels.job_name=latam-data-challenge-job" \
-  --project=latam-data-challenge \
-  --format="table(timestamp,severity,textPayload)" \
-  --limit=50
+`notebooks/challenge_analysis.ipynb` contiene:
+- Exploración inicial del dataset
+- Comparación detallada entre métodos time y memory
+- Análisis de rendimiento con memory-profiler
+- Visualización de resultados
+- Conclusiones y recomendaciones
 
-# Filtrar por severidad
-gcloud logging read "resource.type=cloud_run_job AND severity>=WARNING" \
-  --project=latam-data-challenge
-```
+## 📄 Licencia
 
-#### Métricas Disponibles
+Este proyecto está bajo la licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
 
-- **Tiempo de ejecución** por método (time vs memory)
-- **Uso de memoria** durante procesamiento
-- **Resultados por pregunta** guardados en BigQuery
-- **Logs estructurados** con timestamps y contexto
+## 🤝 Contribuciones
 
-#### Consultas BigQuery
-
-```sql
--- Comparar rendimiento entre métodos
-SELECT 
-  method,
-  COUNT(*) as total_results,
-  MAX(ingested_at) as last_execution
-FROM `latam-data-challenge.challenge_data.q1_results`
-GROUP BY method;
-
--- Ver evolución temporal de resultados
-SELECT 
-  DATE(ingested_at) as execution_date,
-  method,
-  COUNT(*) as records_processed
-FROM `latam-data-challenge.challenge_data.q2_results`
-GROUP BY execution_date, method
-ORDER BY execution_date DESC;
-```
-
-### Contribución
-
+Las contribuciones son bienvenidas. Por favor:
 1. Fork el proyecto
-2. Crea una rama feature (`git checkout -b feature/nueva-feature`)
-3. Commit tus cambios (`git commit -am 'Agrega nueva feature'`)
-4. Push a la rama (`git push origin feature/nueva-feature`)
+2. Crea tu feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push al branch (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
-
-### Contacto
-
-**Autor:** Fernando Landero  
-**Email:** landerox@gmail.com  
-**GitHub:** [@landerox](https://github.com/landerox)
 
 ---
